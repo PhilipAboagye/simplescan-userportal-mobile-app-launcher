@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <title>simplescan</title>
+  <meta name="theme-color" content="#6366f1">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      background: #101114; color: #f2f3f7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+    }
+  
+     .splash { text-align: center; padding: 24px; max-width: 340px; }
+    .logo {
+      width: 72px; height: 72px; border-radius: 20px;
+      background: linear-gradient(135deg, #101114, #101114);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 18px;
+      box-shadow: 0 12px 32px rgba(99,102,241,0.35);
+      overflow: hidden; /* Keeps the image inside the border-radius if it overflows */
+    }
+
+    /* New styles for the image */
+    .logo-img {
+      max-width: 60%; /* Scales image perfectly inside the 72px box */
+      height: auto;
+      object-fit: contain;
+    }
+    .title { font-size: 19px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 13px; color: #9498a8; margin-bottom: 24px; line-height: 1.4; }
+    .spinner {
+      width: 26px; height: 26px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.15); border-top-color: #6366f1;
+      animation: spin 0.8s linear infinite; margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn {
+      display: block; width: 100%; padding: 13px; border-radius: 12px;
+      font-weight: 700; font-size: 14.5px; text-decoration: none;
+      border: none; cursor: pointer; margin-top: 10px;
+    }
+    .btn-primary { background: #6366f1; color: #fff; }
+    .btn-secondary { background: #1e2027; color: #f2f3f7; border: 1px solid #2a2c35; }
+    .offline-msg { display: none; font-size: 13px; color: #ef4444; margin-top: 16px; }
+
+    .update-banner {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #1e2027; border-top: 1px solid #2a2c35;
+      padding: 14px 18px; display: none; align-items: center;
+      justify-content: space-between; gap: 12px; font-size: 13px;
+    }
+    .update-banner.show { display: flex; }
+    .update-banner button {
+      background: #6366f1; color: #fff; border: none; border-radius: 8px;
+      padding: 8px 14px; font-weight: 700; font-size: 13px; cursor: pointer; flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- <div class="splash">
+    <div class="logo">🚀</div>
+    <div class="title">Automations Hub</div>
+    <div class="subtitle" id="statusText">Connecting…</div>
+    <div class="spinner" id="spinner"></div>
+
+    <div id="actionButtons" style="display:none">
+      <button class="btn btn-primary" id="installBtn" style="display:none">📲 Install App</button>
+      <a class="btn btn-secondary" id="continueBtn" href="#">Continue to Dashboard →</a>
+    </div>
+
+    <div class="offline-msg" id="offlineMsg">No internet connection. Reconnect and try again.</div>
+  </div> -->
+  <div class="splash">
+  <div class="logo">
+    <img src="icon-512.png" alt="simplescan logo" class="logo-img">
+  </div>
+  <div class="title">simplescan</div>
+  <div class="subtitle" id="statusText">Connecting…</div>
+  <div class="spinner" id="spinner"></div>
+
+  <div id="actionButtons" style="display:none">
+    <button class="btn btn-primary" id="installBtn" style="display:none">📲 Install App</button>
+    <a class="btn btn-secondary" id="continueBtn" href="#">Continue to login →</a>
+  </div>
+
+  <div class="offline-msg" id="offlineMsg">No internet connection. Reconnect and try again.</div>
+</div>
+
+  <div class="update-banner" id="updateBanner">
+    <span>🔄 A new version is available</span>
+    <button id="updateNowBtn">Update</button>
+  </div>
+
+  <script>
+    // ============================================================
+    // CONFIG — set this to your Apps Script web app's /exec URL
+    // ============================================================
+
+    const DASHBOARD_URL = 'https://simplescan.okleytech.com';
+    
+    document.getElementById('continueBtn').href = DASHBOARD_URL;
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    let swRegistration = null;
+    let updateReady = false;
+
+    // ----- Service worker registration + update detection -----
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        swRegistration = reg;
+
+        // Force a fresh check against the server every time this page loads,
+        // rather than waiting for the browser's own periodic check interval.
+        reg.update().catch(() => {});
+
+        // A waiting worker already exists (found on a previous visit) —
+        // surface the banner immediately.
+        if (reg.waiting) {
+          showUpdateBanner();
+        }
+
+        reg.addEventListener('updatefound', () => {
+          const installingWorker = reg.installing;
+          if (!installingWorker) return;
+          installingWorker.addEventListener('statechange', () => {
+            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // A new version finished installing and there's already an
+              // active controller — this is a genuine update, not the first install.
+              showUpdateBanner();
+            }
+          });
+        });
+      }).catch(() => {});
+
+      // Once the new SW takes control (after the user taps "Update"),
+      // reload once to actually run the new version.
+      let hasReloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (hasReloaded) return;
+        hasReloaded = true;
+        window.location.reload();
+      });
+    }
+
+    function showUpdateBanner() {
+      updateReady = true;
+      document.getElementById('updateBanner').classList.add('show');
+    }
+
+    document.getElementById('updateNowBtn').addEventListener('click', () => {
+      if (swRegistration && swRegistration.waiting) {
+        swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      document.getElementById('updateBanner').classList.remove('show');
+    });
+
+    // ----- Connection / install / redirect flow -----
+    function redirectToDashboard() {
+      // Don't redirect out from under an update prompt — let the user
+      // deal with the update first if one is showing.
+      if (updateReady) return;
+      window.location.replace(DASHBOARD_URL);
+    }
+
+    if (!navigator.onLine) {
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('statusText').textContent = 'Offline';
+      document.getElementById('offlineMsg').style.display = 'block';
+      document.getElementById('actionButtons').style.display = 'block';
+    } else if (isStandalone) {
+      document.getElementById('statusText').textContent = 'Connecting…';
+      setTimeout(redirectToDashboard, 900);
+    } else {
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('statusText').textContent = 'Add this to your home screen for the best experience.';
+      document.getElementById('actionButtons').style.display = 'block';
+
+      let deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('installBtn').style.display = 'block';
+      });
+
+      document.getElementById('installBtn').addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        document.getElementById('installBtn').style.display = 'none';
+      });
+
+      window.addEventListener('appinstalled', () => {
+        document.getElementById('installBtn').style.display = 'none';
+        document.getElementById('statusText').textContent = 'Installed! Open it from your home screen.';
+      });
+    }
+  </script>
+</body>
+</html>
+
+
+
+<!-- const DASHBOARD_URL = 'https://simplescan.okleytech.com'; -->
+
+ <!-- .splash { text-align: center; padding: 24px; max-width: 340px; }
+    .logo {
+      width: 72px; height: 72px; border-radius: 20px;
+      background: linear-gradient(135deg, #101114, #101114);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 18px;
+      box-shadow: 0 12px 32px rgba(99,102,241,0.35);
+      overflow: hidden; /* Keeps the image inside the border-radius if it overflows */
+    }
+
+    /* New styles for the image */
+    .logo-img {
+      max-width: 60%; /* Scales image perfectly inside the 72px box */
+      height: auto;
+      object-fit: contain;
+    } -->
