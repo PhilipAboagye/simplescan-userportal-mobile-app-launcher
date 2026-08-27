@@ -1,0 +1,267 @@
+<!-- learn.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <title>Learning Hub · simplescan</title>
+  <meta name="theme-color" content="#101114">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0; padding: 0;
+      background: #101114; color: #f2f3f7;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* ---------- header ---------- */
+    .topbar {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(16,17,20,0.92); backdrop-filter: blur(10px);
+      border-bottom: 1px solid #2a2c35;
+      padding: 14px 20px; padding-top: max(14px, env(safe-area-inset-top));
+      display: flex; align-items: center; gap: 12px;
+    }
+    .back-btn {
+      width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+      background: #1e2027; border: 1px solid #2a2c35; color: #f2f3f7;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none; font-size: 16px;
+    }
+    .topbar-title { font-size: 15.5px; font-weight: 700; }
+    .topbar-sub { font-size: 11.5px; color: #9498a8; }
+
+    main { max-width: 720px; margin: 0 auto; padding: 22px 20px 60px; }
+
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+      color: #6366f1; margin-bottom: 8px;
+    }
+    .hero-heading { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 8px; }
+    .hero-sub { font-size: 13.5px; color: #9498a8; line-height: 1.55; margin-bottom: 22px; max-width: 56ch; }
+
+    /* ---------- filter chips ---------- */
+    .chip-row {
+      display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 22px;
+      scrollbar-width: none;
+    }
+    .chip-row::-webkit-scrollbar { display: none; }
+    .chip {
+      flex-shrink: 0; padding: 8px 14px; border-radius: 999px;
+      background: #1e2027; border: 1px solid #2a2c35; color: #9498a8;
+      font-size: 12.5px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: border-color .15s ease, color .15s ease, background .15s ease;
+    }
+    .chip .dot { width: 7px; height: 7px; border-radius: 50%; }
+    .chip.active { color: #f2f3f7; background: #23252d; }
+
+    /* ---------- card grid ---------- */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 560px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+    .card {
+      position: relative;
+      display: flex; flex-direction: column; gap: 10px;
+      background: #1e2027; border: 1px solid #2a2c35; border-radius: 16px;
+      padding: 16px; text-decoration: none; color: inherit;
+      border-left: 3px solid var(--accent, #6366f1);
+      transition: transform .15s ease, border-color .15s ease;
+    }
+    .card:active { transform: scale(0.98); }
+    .card:hover { border-color: var(--accent, #6366f1); }
+
+    .card-top { display: flex; align-items: center; gap: 10px; }
+    .card-icon {
+      flex-shrink: 0; width: 38px; height: 38px; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+      background: color-mix(in srgb, var(--accent, #6366f1) 20%, transparent);
+    }
+    .card-name { font-size: 14.5px; font-weight: 700; }
+    .card-tag {
+      font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--accent, #6366f1);
+    }
+    .card-desc { font-size: 12.5px; color: #9498a8; line-height: 1.5; }
+    .card-open {
+      margin-top: 2px; font-size: 12px; font-weight: 700; color: #f2f3f7;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .card-open .arrow { transition: transform .15s ease; }
+    .card:hover .card-open .arrow { transform: translateX(3px); }
+
+    .hidden { display: none !important; }
+
+    .footnote {
+      margin-top: 28px; font-size: 11.5px; color: #6b6f7d; line-height: 1.6;
+      border-top: 1px solid #2a2c35; padding-top: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <a class="back-btn" href="index.html" aria-label="Back">←</a>
+    <div>
+      <div class="topbar-title">Learning Hub</div>
+      <div class="topbar-sub">Free tools, outside simplescan</div>
+    </div>
+  </div>
+
+  <main>
+    <div class="hero-eyebrow">Practice at your own pace</div>
+    <div class="hero-heading">Pick a subject, pick a tool</div>
+    <div class="hero-sub">
+      These are free, independent platforms — not part of simplescan — that let you explore
+      math and science hands-on, get homework help, and practise coding. Tap a card to open it
+      in your browser.
+    </div>
+
+    <div class="chip-row" id="chipRow">
+      <div class="chip active" data-filter="all">All</div>
+      <div class="chip" data-filter="math"><span class="dot" style="background:#f59e0b"></span>Math</div>
+      <div class="chip" data-filter="science"><span class="dot" style="background:#10b981"></span>Science</div>
+      <div class="chip" data-filter="coding"><span class="dot" style="background:#38bdf8"></span>Coding</div>
+      <div class="chip" data-filter="reference"><span class="dot" style="background:#f472b6"></span>Homework help</div>
+    </div>
+
+    <div class="grid" id="grid">
+
+      <a class="card" data-cat="math" style="--accent:#f59e0b" href="https://www.geogebra.org/" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">📐</div>
+          <div><div class="card-name">GeoGebra</div><div class="card-tag">Math</div></div>
+        </div>
+        <div class="card-desc">Interactive geometry, algebra, calculus and graphing — build and manipulate constructions by hand.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" data-cat="math" style="--accent:#f59e0b" href="https://www.desmos.com/calculator" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">📊</div>
+          <div><div class="card-name">Desmos</div><div class="card-tag">Math</div></div>
+        </div>
+        <div class="card-desc">A free graphing calculator for plotting functions, exploring transformations and checking your work.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" data-cat="math" style="--accent:#f59e0b" href="https://www.khanacademy.org/" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">🎓</div>
+          <div><div class="card-name">Khan Academy</div><div class="card-tag">Math · All subjects</div></div>
+        </div>
+        <div class="card-desc">Full video lessons and practice sets from arithmetic through calculus, plus science and humanities.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" data-cat="science" style="--accent:#10b981" href="https://phet.colorado.edu/en/simulations/" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">⚛️</div>
+          <div><div class="card-name">PhET Simulations</div><div class="card-tag">Science</div></div>
+        </div>
+        <div class="card-desc">Hands-on physics, chemistry, biology and earth science simulations from the University of Colorado.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" data-cat="science" style="--accent:#10b981" href="https://www.ck12.org/" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">🧬</div>
+          <div><div class="card-name">CK-12 Foundation</div><div class="card-tag">Science · Math</div></div>
+        </div>
+        <div class="card-desc">Free STEM textbooks (FlexBooks), practice problems and simulations aligned to school curricula.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" data-cat="science" style="--accent:#10b981" href="https://www.nasa.gov/stem/" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">🚀</div>
+          <div><div class="card-name">NASA STEM</div><div class="card-tag">Science</div></div>
+        </div>
+        <div class="card-desc">Space and earth science resources, activities and real mission data straight from NASA.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" data-cat="coding" style="--accent:#38bdf8" href="https://scratch.mit.edu/" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">🐱</div>
+          <div><div class="card-name">Scratch</div><div class="card-tag">Coding</div></div>
+        </div>
+        <div class="card-desc">Visual, drag-and-drop programming from MIT — build games and animations while learning logic.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" data-cat="coding" style="--accent:#38bdf8" href="https://code.org/" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">💻</div>
+          <div><div class="card-name">Code.org</div><div class="card-tag">Coding</div></div>
+        </div>
+        <div class="card-desc">Structured computer science courses for every age, from block-based basics to real syntax.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" data-cat="coding" style="--accent:#38bdf8" href="https://www.freecodecamp.org/" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">🔥</div>
+          <div><div class="card-name">freeCodeCamp</div><div class="card-tag">Coding</div></div>
+        </div>
+        <div class="card-desc">Self-paced coding curriculum with certifications, for students ready to go further with programming.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" data-cat="reference" style="--accent:#f472b6" href="https://www.wolframalpha.com/" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">∑</div>
+          <div><div class="card-name">Wolfram Alpha</div><div class="card-tag">Homework help</div></div>
+        </div>
+        <div class="card-desc">A computational answer engine — type a problem and see the worked steps, not just the answer.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" data-cat="reference" style="--accent:#f472b6" href="https://www.bbc.co.uk/bitesize" target="_blank" rel="noopener">
+        <div class="card-top">
+          <div class="card-icon">📖</div>
+          <div><div class="card-name">BBC Bitesize</div><div class="card-tag">Homework help</div></div>
+        </div>
+        <div class="card-desc">Short revision guides and quizzes covering most school subjects, organised by level.</div>
+        <div class="card-open">Open platform <span class="arrow">→</span></div>
+      </a>
+
+    </div>
+
+    <div class="footnote">
+      These platforms are run by their own organisations, not by simplescan. They open in your
+      browser and are free to use — some may ask you to create an account for progress tracking.
+    </div>
+  </main>
+
+  <script>
+    const chips = document.querySelectorAll('.chip');
+    const cards = document.querySelectorAll('.card');
+
+    chips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chips.forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const filter = chip.dataset.filter;
+        cards.forEach(card => {
+          const show = filter === 'all' || card.dataset.cat === filter;
+          card.classList.toggle('hidden', !show);
+        });
+      });
+    });
+
+    // Keep the service worker (registered from index.html) controlling this
+    // page too, so update detection stays consistent across the app.
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
