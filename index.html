@@ -16,29 +16,28 @@
   <style>
     * { box-sizing: border-box; }
     html, body {
-      margin: 0; padding: 0; height: 100%;
+      margin: 0; padding: 0; min-height: 100%;
       background: #101114; color: #f2f3f7;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      display: flex; align-items: center; justify-content: center;
     }
-  
-     .splash { text-align: center; padding: 24px; max-width: 340px; }
+    body {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+    }
+
+    .splash { text-align: center; width: 100%; max-width: 360px; }
+
+    /* ---------- connecting state ---------- */
     .logo {
       width: 72px; height: 72px; border-radius: 20px;
       background: linear-gradient(135deg, #101114, #101114);
       display: flex; align-items: center; justify-content: center;
       margin: 0 auto 18px;
       box-shadow: 0 12px 32px rgba(99,102,241,0.35);
-      overflow: hidden; /* Keeps the image inside the border-radius if it overflows */
+      overflow: hidden;
     }
-
-    /* New styles for the image */
-    .logo-img {
-      max-width: 60%; /* Scales image perfectly inside the 72px box */
-      height: auto;
-      object-fit: contain;
-    }
-    .title { font-size: 19px; font-weight: 700; margin-bottom: 6px; }
+    .logo-img { max-width: 60%; height: auto; object-fit: contain; }
+    .title { font-size: 19px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
     .subtitle { font-size: 13px; color: #9498a8; margin-bottom: 24px; line-height: 1.4; }
     .spinner {
       width: 26px; height: 26px; border-radius: 50%;
@@ -46,14 +45,53 @@
       animation: spin 0.8s linear infinite; margin: 0 auto;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .btn {
-      display: block; width: 100%; padding: 13px; border-radius: 12px;
-      font-weight: 700; font-size: 14.5px; text-decoration: none;
-      border: none; cursor: pointer; margin-top: 10px;
-    }
-    .btn-primary { background: #6366f1; color: #fff; }
-    .btn-secondary { background: #1e2027; color: #f2f3f7; border: 1px solid #2a2c35; }
     .offline-msg { display: none; font-size: 13px; color: #ef4444; margin-top: 16px; }
+
+    /* ---------- choice state ---------- */
+    .choice-wrap { display: none; }
+    .choice-wrap.show { display: block; animation: fadein .35s ease both; }
+    @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .choice-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+      color: #6366f1; margin-bottom: 10px;
+    }
+    .choice-heading { font-size: 21px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+    .choice-sub { font-size: 13.5px; color: #9498a8; margin-bottom: 26px; line-height: 1.5; }
+
+    .choice-card {
+      display: flex; align-items: center; gap: 14px;
+      width: 100%; text-align: left;
+      background: #1e2027; border: 1px solid #2a2c35; border-radius: 16px;
+      padding: 16px 16px; margin-bottom: 12px;
+      text-decoration: none; color: inherit; cursor: pointer;
+      transition: border-color .15s ease, transform .15s ease;
+    }
+    .choice-card:active { transform: scale(0.98); }
+    .choice-card.primary {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-color: transparent;
+    }
+    .choice-card:not(.primary):hover { border-color: #6366f1; }
+
+    .choice-icon {
+      flex-shrink: 0; width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px; background: rgba(255,255,255,0.1);
+    }
+    .choice-card.primary .choice-icon { background: rgba(255,255,255,0.18); }
+
+    .choice-text { flex: 1; min-width: 0; }
+    .choice-label { font-size: 14.5px; font-weight: 700; margin-bottom: 2px; }
+    .choice-desc { font-size: 12px; color: rgba(242,243,247,0.65); line-height: 1.35; }
+    .choice-card.primary .choice-desc { color: rgba(255,255,255,0.8); }
+    .choice-arrow { flex-shrink: 0; opacity: .5; font-size: 16px; }
+
+    .install-inline {
+      display: none; width: 100%; padding: 12px; border-radius: 12px;
+      background: transparent; border: 1px solid #2a2c35; color: #9498a8;
+      font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 4px;
+    }
 
     .update-banner {
       position: fixed; bottom: 0; left: 0; right: 0;
@@ -69,34 +107,48 @@
   </style>
 </head>
 <body>
-  <!-- <div class="splash">
-    <div class="logo">🚀</div>
-    <div class="title">Automations Hub</div>
-    <div class="subtitle" id="statusText">Connecting…</div>
-    <div class="spinner" id="spinner"></div>
 
-    <div id="actionButtons" style="display:none">
-      <button class="btn btn-primary" id="installBtn" style="display:none">📲 Install App</button>
-      <a class="btn btn-secondary" id="continueBtn" href="#">Continue to Dashboard →</a>
+  <div class="splash">
+
+    <!-- connecting / offline state -->
+    <div id="connectingState">
+      <div class="logo">
+        <img src="icon-512.png" alt="simplescan logo" class="logo-img">
+      </div>
+      <div class="title">simplescan</div>
+      <div class="subtitle" id="statusText">Connecting…</div>
+      <div class="spinner" id="spinner"></div>
+      <div class="offline-msg" id="offlineMsg">No internet connection. Reconnect and try again.</div>
     </div>
 
-    <div class="offline-msg" id="offlineMsg">No internet connection. Reconnect and try again.</div>
-  </div> -->
-  <div class="splash">
-  <div class="logo">
-    <img src="icon-512.png" alt="simplescan logo" class="logo-img">
-  </div>
-  <div class="title">simplescan</div>
-  <div class="subtitle" id="statusText">Connecting…</div>
-  <div class="spinner" id="spinner"></div>
+    <!-- choice state: shown once we know the device is online -->
+    <div class="choice-wrap" id="choiceWrap">
+      <div class="choice-eyebrow">simplescan</div>
+      <div class="choice-heading">Where would you like to go?</div>
+      <div class="choice-sub">Sign in to your school account, or browse free learning tools while you're here.</div>
 
-  <div id="actionButtons" style="display:none">
-    <button class="btn btn-primary" id="installBtn" style="display:none">📲 Install App</button>
-    <a class="btn btn-secondary" id="continueBtn" href="#">Continue to login →</a>
-  </div>
+      <a class="choice-card primary" href="#" id="loginCard">
+        <div class="choice-icon">🔐</div>
+        <div class="choice-text">
+          <div class="choice-label">Continue to login</div>
+          <div class="choice-desc">Attendance, records and school tools</div>
+        </div>
+        <div class="choice-arrow">→</div>
+      </a>
 
-  <div class="offline-msg" id="offlineMsg">No internet connection. Reconnect and try again.</div>
-</div>
+      <a class="choice-card" href="learn.html" id="learnCard">
+        <div class="choice-icon">🧭</div>
+        <div class="choice-text">
+          <div class="choice-label">Learning hub</div>
+          <div class="choice-desc">Free simulations & practice tools for math, science and coding</div>
+        </div>
+        <div class="choice-arrow">→</div>
+      </a>
+
+      <button class="install-inline" id="installBtn">📲 Install app to your home screen</button>
+    </div>
+
+  </div>
 
   <div class="update-banner" id="updateBanner">
     <span>🔄 A new version is available</span>
@@ -109,8 +161,8 @@
     // ============================================================
 
     const DASHBOARD_URL = 'https://simplescan.okleytech.com/user-portal/login';
-    
-    document.getElementById('continueBtn').href = DASHBOARD_URL;
+
+    document.getElementById('loginCard').href = DASHBOARD_URL;
 
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     let swRegistration = null;
@@ -166,68 +218,44 @@
       document.getElementById('updateBanner').classList.remove('show');
     });
 
-    // ----- Connection / install / redirect flow -----
-    function redirectToDashboard() {
-      // Don't redirect out from under an update prompt — let the user
-      // deal with the update first if one is showing.
-      if (updateReady) return;
-      window.location.replace(DASHBOARD_URL);
+    // ----- Connection check → show the choice screen -----
+    // The loader no longer auto-redirects anywhere (login or otherwise).
+    // It always hands the decision to the user: sign in, or browse the
+    // learning hub first.
+    function showChoiceScreen() {
+      document.getElementById('connectingState').style.display = 'none';
+      document.getElementById('choiceWrap').classList.add('show');
     }
 
     if (!navigator.onLine) {
       document.getElementById('spinner').style.display = 'none';
       document.getElementById('statusText').textContent = 'Offline';
       document.getElementById('offlineMsg').style.display = 'block';
-      document.getElementById('actionButtons').style.display = 'block';
-    } else if (isStandalone) {
-      document.getElementById('statusText').textContent = 'Connecting…';
-      setTimeout(redirectToDashboard, 900);
     } else {
-      document.getElementById('spinner').style.display = 'none';
-      document.getElementById('statusText').textContent = 'Add this to your home screen for the best experience.';
-      document.getElementById('actionButtons').style.display = 'block';
+      // Brief pause so the connecting state doesn't just flash by.
+      setTimeout(showChoiceScreen, 500);
 
-      let deferredPrompt = null;
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('installBtn').style.display = 'block';
-      });
+      if (!isStandalone) {
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          deferredPrompt = e;
+          document.getElementById('installBtn').style.display = 'block';
+        });
 
-      document.getElementById('installBtn').addEventListener('click', async () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-        document.getElementById('installBtn').style.display = 'none';
-      });
+        document.getElementById('installBtn').addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          document.getElementById('installBtn').style.display = 'none';
+        });
 
-      window.addEventListener('appinstalled', () => {
-        document.getElementById('installBtn').style.display = 'none';
-        document.getElementById('statusText').textContent = 'Installed! Open it from your home screen.';
-      });
+        window.addEventListener('appinstalled', () => {
+          document.getElementById('installBtn').style.display = 'none';
+        });
+      }
     }
   </script>
 </body>
 </html>
-
-
-
-<!-- const DASHBOARD_URL = 'https://simplescan.okleytech.com'; -->
-
- <!-- .splash { text-align: center; padding: 24px; max-width: 340px; }
-    .logo {
-      width: 72px; height: 72px; border-radius: 20px;
-      background: linear-gradient(135deg, #101114, #101114);
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 18px;
-      box-shadow: 0 12px 32px rgba(99,102,241,0.35);
-      overflow: hidden; /* Keeps the image inside the border-radius if it overflows */
-    }
-
-    /* New styles for the image */
-    .logo-img {
-      max-width: 60%; /* Scales image perfectly inside the 72px box */
-      height: auto;
-      object-fit: contain;
-    } -->
