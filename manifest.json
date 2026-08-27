@@ -1,6 +1,6 @@
 {
-  "name": "simplescan",
-  "short_name": "simplescan",
+  "name": "simplescan student parent portal",
+  "short_name": "student portal",
   "description": "All your projects, one tap away",
   "start_url": "./index.html",
   "scope": "./",
